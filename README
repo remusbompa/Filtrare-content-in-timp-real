@@ -1,0 +1,125 @@
+Tema cuprinde mai multe clase:
+1) MainClass
+    -reprezinta clasa principala a temei, continand metoda principala a temei care creeaza un obiect 
+    de tip Scanner si un obiect de tip FeedSet, pe care le trimita ca parametri la apelul metodei
+    statice readCommand(Scanner,FeedSet) din cadrul clasei ReadClass.
+2) ReadClass
+    -contine metoda readCommand(Scanner,FeedSet) care citeste informatiile din fisierul de intrare
+    -metoda primeste ca parametri un obiect de tip Scanner folosit pentru citirea de la intrarea
+    standard si o instanta a clasei FeedSet
+    -metoda creeaza o instanta a clasei ObserversFactory ( obsf) cu ajutorul careia se pot crea
+    obiecte de tipul Observator
+    -se citeste fiecare linie de la intrarea standard si in functie de primul cuvant pe care aceasta
+    il contine (salvat in variabila locala command), se executa diferite instructiuni
+3) TreeExpresion
+    -clasa care modeleaza un arbore binar de expresii 
+    -contine campul node care reprezinta arborele binar propriu-zis fiind o referinta catre celula
+    de pe primul nivel al arborelui si metoda accept care verifica daca feed-ul trimis ca parametru
+    prin nume si valoare respecta arborele de expresii
+    -constructorul clasei primeste ca parametru linia citita de la intrarea standard si se foloseste
+    de aceasta pentru a contrui un vector de paranteze (String paranteze) si un vector de expresii
+    delimitate de paranteze (de tipul &&,|| sau Op name/value filter_value unde Op poate fi: 
+    eq,ne,gt,gl,lt sau le) (String[] expresii). Deoarece pentru construirea acestor vectori am 
+    folosit metoda split pe linie, vectorul expresii poate contine si elemente formate doar din 
+    caracterul null.Campul node al obiectului este initializat in costructor prin apelul metodei 
+    statice readExpresion.
+    *)readExpresion
+    -primeste ca parametri un vector de paranteze si un vector de expresii si intoarce referinta 
+    catre celula de pe primul nive al arborelui construit
+    -in cazul in care vectorul de paranteze este vid, deci lungimea lui e 0 se va construi un 
+    singur nod, avand informatia "nil"
+    -in cazul in care vectorul de paranteze este nevid se apeleaza metoda recursiva insertNode care 
+    va creea arborele de expresii si va intoarce referinta catre primul nod
+    *)insertNode
+    - primeste ca parametri un vector de paranteze, un vector de expresii delimitate de paranteze,
+    doi intregi de tip IntegerRef (folosesc acest tip pentru a nu se modifica valoarea intregilor
+    la intoarcerea din apelurile recursive) si numarul nivelului din arbore la care s-a ajuns in 
+    cadrul apelurilor recursive (numerotarea se incepe de la nivelul 0)
+    -odata apelata, metoda citeste paranteza de pe actuala pozitie dupa care incrementeaza pozitia 
+    din vectorul de paranteze
+    -daca paranteza citita este una deschisa, se construieste un nou nod, se apeleaza recursiv 
+    functia la stanga, se introduce in campul info noului nod valoarea din vectorul de expresii de
+    pe pozitia corespunzatoare (daca valoarea este nula, se incrementeaza pozitia in vectorul de 
+    expresii) si, in cazul in care nodul construit nu este o frunza (daca nu s-a obtinut valoare 
+    null prin apelul recursiv al metodei la stanga), se mai apeleaza odata recursiv metoda pentru 
+    campul dr al nodului
+    -urmatoarea paranteza care ar urma pentru a se inchide subarborele binar obtinut este una 
+    inchisa. Insa, este posibil ca intr-o paranteza sa existe mai multi operatori booleeni de 
+    acelasi tip (&& sau ||), si deci sa mai existe niste perechi de paranteze pana ce se va ichide
+    paranteza subarborelui. Pentru a rezolva aceasta problema, se citeste urmatoarea paranteza din
+    vectorul de paranteze si cat timp aceasta nu este una inchisa (while(citit!=')')) se creeaza 
+    un nou nod caruia i se atribuie in stanga subarborele, primeste ca informatie urmatoarea 
+    expresie nenula din vectorul de expresii si apeleaza recursiv metoda la dreapta. In acest fel 
+    noul subarbore va avea vechiul subarbore in stanga, ceea ce nu afecteaza evaluarea arborelui 
+    de expresie deoarece operatorii booleeni sunt asociativi.
+    -in cazul in care s-a ajuns la nivelul 0 si nu s-au epuizat parantezele
+    (if(niv==0&&i.value<paranteze.length())) inseamna ca s-a ajuns la o expresie de forma a&&/||b,
+    unde a si b sunt operanzii iar operatorul este && sau ||, care nu este cuprinsa intr-o 
+    paranteza si deci se procedeaza ca in cazul precedent, construindu-se un nou subarbore care il
+    are in partea stanga pe subarborele precedent iar in nodul cel nou (nodul radacina ) are 
+    operatorul.
+    -in cazul in care paranteza citita de metoda la inceput este una inchisa inseamna ca nodul 
+    creat este o frunza si se revine la nivelul anterior in arbore
+    *)IntegerRef
+    -reprezinta o clasa cu un camp de tip integer care este folosita pentru a pastra valoarea unor
+    intregi la intoarcerea din apelurile recursive
+    *)Node
+    -modeleaza structura unui nod al unui arbore, avand un camp ce pastreaza o informatie (info), 
+    un camp ce pastreaza referinta catre un nod din stanga (st) si un camp ce pastreaza referinta 
+    catre un nod din dreapta(dr)
+4) ObserversFactory
+    - este o clasa de tip Singleton Factory care creeaza un obiect de tipul Observator prin apelul
+    metodei createObserver
+    -instantei acestei clase i se pastreaza referinta in campul static observersFactory si aceasta
+    se poate obtine prin apelul metodei getInstance care initializeaza observersFactory in cazul 
+    in care nu este deja initializata (in cazul in care observersFactory==null)
+5) Observator
+    -clasa afiseaza pentru fiecare feed, informatiile cerute de tema, pe care le retine in campul 
+    prev_stock care reprezinta o lista de tipul TreeMap n care cheile sunt numele feed-urilor iar
+    valoarea este un vector generic avand elemente de tipul Object. Vectorul valorii contine 4 
+    elemente ocupand pozitiile cu index-ul de la 0 la 3 astfel:
+        -Pe pozitia 0 se afla penultima valoare a feed-ului afisata de observator, considerand ca 
+        ultima valoare afisata este cea  actuala
+        -Pe pozitia 1 se afla acuala valoare a feed-ului sau ultima valoare afisata a feed-ului,
+        considerand ca ultima valoare afisata este cea  actuala
+        -Pe pozitia 2 se afla procentul de crestere a valorii feed-ului, intre penultima si ultima 
+        valoare afisata 
+        -Pe pozitia 3 se afla numarul de modificari facute asupra valorii feed-ului de la ultima
+        afisare a acesteia
+    -clasa respecta design pattern-ul observer, avand ca subject clasa FeedSet, catre care 
+    pastreaza referinta in campul suject si pe care o va folosi pentru a adauga noul obiect 
+    Observator in lista de observatori a instantei clasei FeedSet la apelul constructorului clasei
+    Observator
+    -clasa mai contine campurile treeExpresion reprezentand arborele de expresie si obs_id 
+    reprezentand id-ul clasei, necesare pentru afisarea informatiilor dorite
+    -contine metoda print care afiseaza feed-urile din lista prev_stock care trec de filtrul 
+    treeExpresion. Pentru a evalua feed-ul pe arborele de expresie, se foloseste visitor design 
+    pattern, folosindu-se ca visitor o instanta a clasei TreeExpresionVisitor
+6) FeedSet
+    -clasa Singleton care respecta observer design pattern, fiind clasa subject pentru clasa 
+    Observator, deoarece aceasta clasa notifica clasa Observator cu privire la modificarea 
+    informatiilor din prev_stock, apeland metodele updateObserverStock si addStock ale instantelor
+    clasei Observator
+    -instantei acestei clase i se pastreaza referinta in campul static feedSet si aceasta se poate
+    obtine prin apelul metodei getInstance care initializeaza feedSet in cazul in care nu este 
+    deja initializata (in cazul in care feedSet==null)
+    -contine o lista de observatori observers la care se pot adauga observatori, prin apelul 
+    metodei add, sau din care se pot elimina observatori prin apelul metodei remove. Aceasta lista
+    este necesara pentru comanda print cand se va apela metoda findObs pentru a se cauta un 
+    observator in functie de id-ul sau
+    -contine o lista de feed-uri la care se pot adauga feed-uri prin apelul metodei addStock
+7) OperatorsClass
+    -clasa contine doua metode statice:
+    *)evaluateOperand
+        -evalueaza o expresie booleeana primita ca parametru si intoarce true daca feed-ul primit 
+        ca parametru prin nume si valoare respecta expresia booleeana si false in caz contrar
+    *)evaluateOperator
+        -Metoda determina ce operator boolean se afla in String-ul primit in primul parametru: && 
+        sau || si, in functie de acesta, metoda intoarce rezultatul obtinut prin aplicarea 
+        operatorului pe cei doi operanzi primiti ca parametri
+8) TreeExpresionVisitor
+    -clasa este folosita pentru a evalua un feed pe un filtru de tip TreeExpresion prin apelul 
+    metodei visit care parcurge arborele de expresie primit ca parametru cu feed-ul primit ca 
+    parametru prin nume si valoare. Pentru evaluarea expresiilor din arbore se folosesc cele doua 
+    metode statice ale clasei OperatorsClass: evaluateOperand si evaluateOperator iar rezultatul 
+    va fi o valoare booleana: true daca feed-ul trece de filtru si false in caz contrar.
